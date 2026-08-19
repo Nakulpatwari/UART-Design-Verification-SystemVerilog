@@ -1,80 +1,65 @@
-UART Design & Verification using SystemVerilog
-Project Overview
-----------------
-This project demonstrates the design and functional verification of a UART (Universal Asynchronous
-Receiver Transmitter)
-using Verilog RTL and a SystemVerilog-based testbench with UVM-style architecture (environment, driver,
-generator, monitor, scoreboard).
-Focus: Functional verification of TX and RX UART modules with stimulus generation, data checking, and
-coverage-style validation.
-Features
---------
-- Configurable baud rate and clock frequency
-- UART Transmitter (uarttx)
-- UART Receiver (uartrx)
-- Top Module integration (uart_top)
-- Interface (uart_if) for seamless TB-DUT interaction
-- UVM-style Testbench Components: Generator, Driver, Monitor, Scoreboard, Environment
-- Support for write and read operations
-- Visual simulation trace with $dumpfile("dump.vcd")
-UART Architecture
------------------
-TX Input Data (dintx) --> uarttx --> tx line --> Receiver uartrx --> Received Output (doutrx)
-File Structure
---------------
-uart_top.sv - Top-level UART wrapper
-uarttx.sv - UART transmitter module
-uartrx.sv - UART receiver module
-uart_if.sv - Interface for testbench-DUT
-transaction.sv - Transaction class
-generator.sv - Generates stimulus
-driver.sv - Drives stimulus to DUT
-monitor.sv - Monitors DUT response
-scoreboard.sv - Compares outputs
-environment.sv - Connects all TB components
-tb.sv - Top-level testbench
-dump.vcd - Waveform output file
-README.md - Project documentation
-Simulation Parameters
----------------------
-clk_freq : 1,000,000 Hz
-baud_rate : 9600
-Data Width: 8 bits
-TX Line Idle: 1 (high)
-RX Sampled : Rising Edge of uclk
-Testbench Operation
--------------------
-- Randomized transactions for TX and RX
-- Events used to synchronize driver, generator, monitor, and scoreboard
-- TX -> RX data path tested
-- Results are compared using a scoreboard
-Example Output
---------------
-[GEN]: Oper : write Din : 152
-[DRV]: Data Sent : 152
-[MON]: DATA SEND on UART TX 152
-[SCO]: DRV : 152 MON : 152
-DATA MATCHED
-----------------------------------------
-[GEN]: Oper : read Din : 221
-[DRV]: Data RCVD : 173
-[MON]: DATA RCVD RX 173
-[SCO]: DRV : 221 MON : 173
-DATA MISMATCHED
-How to Run
-----------
-1. Compile & Simulate (Icarus Verilog):
- iverilog -g2012 -o uart_tb tb.sv uart_top.sv
- vvp uart_tb
- gtkwave dump.vcd
-2. Vivado Simulation:
- - Create new simulation project
- - Add all .sv and uart_top.sv files
- - Set tb as the top module
- - Run behavioral simulation
-Future Enhancements
--------------------
-- Add parity bit support
-- Extend to 9-bit/variable data width
-- Add timeout and framing error detection
-- Include coverage collection metrics
+# UART Design & Verification using SystemVerilog
+
+## Overview
+
+This project implements and verifies a parameterized UART (Universal Asynchronous Receiver Transmitter) using Verilog RTL and SystemVerilog-based functional verification.
+
+The design supports UART transmission and reception with configurable clock frequency and baud rate. A loopback configuration is used in the testbench to verify end-to-end data integrity.
+
+## Architecture
+
+```text
+              +-------------------+
+              |     UART TX       |
+              |                   |
+TX Data ----->| Parallel to       |-----> TX
+              | Serial            |
+              +-------------------+
+                       |
+                       | Loopback
+                       v
+              +-------------------+
+              |     UART RX       |
+              |                   |
+              | Serial to         |-----> RX Data
+              | Parallel          |
+              +-------------------+
+Verification Environment
+
+The SystemVerilog testbench provides:
+
+TX-to-RX loopback verification
+Self-checking scoreboard
+Randomized data generation
+Directed corner-case testing
+Frame-error checking
+Transaction-level pass/fail reporting
+VCD waveform generation
+Test Strategy
+
+The verification suite contains 500 test transactions.
+
+Directed Tests
+The following corner cases are explicitly tested:
+| Test    | Purpose                     |
+| ------- | --------------------------- |
+| `8'h00` | All-zero pattern            |
+| `8'hFF` | All-one pattern             |
+| `8'h55` | Alternating-bit pattern     |
+| `8'hAA` | Reverse alternating pattern |
+| `8'h01` | LSB activity                |
+| `8'h80` | MSB activity                |
+| `8'h7F` | Lower-bit boundary pattern  |
+| `8'hA5` | Mixed-bit pattern           |
+
+Randomized Tests
+492 additional transactions are generated using randomized 8-bit data.
+
+==============================================
+              VERIFICATION REPORT
+==============================================
+Total Tests  : 500
+Passed       : 500
+Failed       : 0
+RESULT       : ALL 500 TESTS PASSED
+==============================================
