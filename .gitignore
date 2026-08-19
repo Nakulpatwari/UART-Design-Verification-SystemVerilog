@@ -1,0 +1,13 @@
+# Simulation outputs
+uart_sim
+*.vvp
+*.vcd
+*.log
+*.out
+
+# GTKWave
+*.gtkw
+
+# Temporary files
+*.tmp
+*.bak
